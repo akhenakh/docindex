@@ -19,7 +19,7 @@ var (
 
 	indexPath   = flag.String("indexPath", "index.db", "index db path")
 	queryString = flag.String("q", "", "query string")
-	lucky       = flag.Bool("lucky", false, "open the first found link")
+	lucky       = flag.Bool("lucky", false, "I feel lucky, open the first found result")
 	limit       = flag.Int("limit", 10, "limit response count")
 )
 
@@ -37,17 +37,23 @@ func main() {
 	//search.Highlight = bleve.NewHighlightWithStyle(ansi.Name)
 	search.Highlight = bleve.NewHighlight()
 	search.Size = *limit
-
+	if *lucky {
+		search.Size = 1
+	}
 	searchResults, err := index.Search(search)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(searchResults)
 
 	if *lucky && searchResults.Total > 0 {
 		fmt.Println(searchResults.Hits[0].ID)
 		path := strings.TrimSuffix(searchResults.Hits[0].ID, ".md")
-		log.Println("opening", dvURL+path+"/")
-		browser.OpenURL(dvURL + path + "/")
+		url := dvURL + path + "/"
+		err = browser.OpenURL(url)
+		if err != nil {
+			log.Printf("can't open URL: %s error: %s", url, err)
+		}
 	}
+
+	fmt.Println(searchResults)
 }
