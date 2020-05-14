@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	version = "no version from LDFLAGS"
-	indexPath          = flag.String("indexPath", "index.db", "index db path")
-	docPath          = flag.String("docPath", "mkdocs.yml", "mkdocs config path")
+	version   = "no version from LDFLAGS"
+	indexPath = flag.String("indexPath", "index.db", "index db path")
+	docPath   = flag.String("docPath", "mkdocs.yml", "mkdocs config path")
 )
 
 type MKDocs struct {
@@ -29,13 +29,13 @@ type MKDocs struct {
 
 type Page struct {
 	Title string
-	Tags []string
-	Path string
-	Body string
+	Tags  []string
+	Path  string
+	Body  string
 }
 
 type txtRenderer struct {
-	Title string
+	Title   string
 	inTitle bool
 }
 
@@ -43,7 +43,7 @@ type txtRenderer struct {
 // every leaf node and twice for every non-leaf node (first with
 // entering=true, then with entering=false). The method should write its
 // rendition of the node to the supplied writer w.
-func (r *txtRenderer)RenderNode(w io.Writer, node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
+func (r *txtRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 	switch node.Type {
 	case blackfriday.Heading:
 		if node.Level == 1 {
@@ -80,11 +80,10 @@ func (r *txtRenderer)RenderNode(w io.Writer, node *blackfriday.Node, entering bo
 //
 // The output should be written to the supplied writer w. If your
 // implementation has no header to write, supply an empty implementation.
-func (r *txtRenderer)RenderHeader(w io.Writer, ast *blackfriday.Node) {}
+func (r *txtRenderer) RenderHeader(w io.Writer, ast *blackfriday.Node) {}
 
 // RenderFooter is a symmetric counterpart of RenderHeader.
-func (r *txtRenderer)RenderFooter(w io.Writer, ast *blackfriday.Node) {}
-
+func (r *txtRenderer) RenderFooter(w io.Writer, ast *blackfriday.Node) {}
 
 func main() {
 	flag.Parse()
@@ -97,19 +96,14 @@ func main() {
 	}
 
 	var pages []Page
-	for _,v := range nav.Nav {
+	for _, v := range nav.Nav {
 		parseNode(v, nil, &pages)
 	}
 
 	mapping := bleve.NewIndexMapping()
-	index, err := bleve.New(*indexPath, mapping)
-	if err != nil {
-		log.Fatal(err)
-	}
+	mapping.DefaultType = "Doc"
 
 	docMapping := bleve.NewDocumentMapping()
-	mapping.AddDocumentMapping("doc", docMapping)
-
 	textFieldMapping := bleve.NewTextFieldMapping()
 	textFieldMapping.Analyzer = standard.Name
 	docMapping.AddFieldMappingsAt("Title", textFieldMapping)
@@ -121,12 +115,16 @@ func main() {
 
 	pathMapping := bleve.NewDocumentDisabledMapping()
 	docMapping.AddSubDocumentMapping("Path", pathMapping)
+	mapping.AddDocumentMapping("Doc", docMapping)
 
-	mapping.DefaultAnalyzer = standard.Name
+	index, err := bleve.New(*indexPath, mapping)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for _, page := range pages {
 		// remote link
-		if strings.HasPrefix(page.Path, "http://") || strings.HasPrefix(page.Path, "https://")  {
+		if strings.HasPrefix(page.Path, "http://") || strings.HasPrefix(page.Path, "https://") {
 			continue
 		}
 
@@ -155,9 +153,9 @@ func main() {
 func parseNode(n interface{}, ptitles []string, pages *[]Page) {
 	switch t := n.(type) {
 	case []interface{}:
-		for _,v := range t {
-		parseNode(v, ptitles, pages)
-	}
+		for _, v := range t {
+			parseNode(v, ptitles, pages)
+		}
 
 	case map[interface{}]interface{}:
 		for title, v := range t {
@@ -171,7 +169,7 @@ func parseNode(n interface{}, ptitles []string, pages *[]Page) {
 			parseNode(v, ptitles, pages)
 		}
 	case map[string]interface{}:
-		for title,v := range t {
+		for title, v := range t {
 			ctitles := append([]string(nil), ptitles...)
 			ctitles = append(ctitles, title)
 			parseNode(v, ctitles, pages)
