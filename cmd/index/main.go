@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/analysis/analyzer/simple"
 	"github.com/blevesearch/bleve/analysis/analyzer/standard"
 	"github.com/russross/blackfriday"
 	"gopkg.in/yaml.v2"
@@ -29,9 +29,10 @@ type MKDocs struct {
 
 type Page struct {
 	Title string
-	Tags  []string
+	Tags  string
 	Path  string
 	Body  string
+	itags []string
 }
 
 type txtRenderer struct {
@@ -110,7 +111,7 @@ func main() {
 	docMapping.AddFieldMappingsAt("Body", textFieldMapping)
 
 	tagFieldMapping := bleve.NewTextFieldMapping()
-	tagFieldMapping.Analyzer = keyword.Name
+	tagFieldMapping.Analyzer = simple.Name
 	docMapping.AddFieldMappingsAt("Tags", tagFieldMapping)
 
 	pathMapping := bleve.NewDocumentDisabledMapping()
@@ -139,9 +140,10 @@ func main() {
 		page.Body = string(txt)
 		page.Title = renderer.Title
 		if page.Title == "" {
-			page.Title = strings.Join(page.Tags, " ")
+			page.Title = strings.Join(page.itags, " ")
 		}
-		log.Printf("Indexing: [%s] %s [%s]\n", page.Path, page.Title, strings.Join(page.Tags, ","))
+		page.Tags = strings.Join(page.itags, " ")
+		log.Printf("Indexing: [%s] %s [%s]\n", page.Path, page.Title, strings.Join(page.itags, ","))
 
 		err = index.Index(page.Path, page)
 		if err != nil {
@@ -179,10 +181,10 @@ func parseNode(n interface{}, ptitles []string, pages *[]Page) {
 		if len(t) < 2 {
 			return
 		}
-		//log.Println("filename", t, "tags", strings.Join(ptitles, "|"))
+		//log.Println("filename", t, "itags", strings.Join(ptitles, "|"))
 		p := Page{
-			Tags: ptitles,
-			Path: t,
+			itags: ptitles,
+			Path:  t,
 		}
 		*pages = append(*pages, p)
 

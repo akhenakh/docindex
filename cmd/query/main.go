@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve"
-	_ "github.com/blevesearch/bleve/analysis/analyzer/keyword"
+	_ "github.com/blevesearch/bleve/analysis/analyzer/simple"
 	_ "github.com/blevesearch/bleve/analysis/analyzer/standard"
 	"github.com/pkg/browser"
 )
