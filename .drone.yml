@@ -1,0 +1,14 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: test
+    image: golang
+    commands:
+      - make test
+
+  - name: linter
+    pull: if-not-exists
+    image: golangci/golangci-lint:v1.31
+    commands:
+      - make lint-drone

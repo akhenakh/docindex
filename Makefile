@@ -6,22 +6,25 @@ endif
 
 DATE := $(shell date -u +%Y%m%d.%H%M%S)
 
-LDFLAGS = -trimpath -ldflags "-X=main.version=$(VERSION)-$(DATE)"
+LDFLAGS = -trimpath 
 
 
 targets = query index
 
 .PHONY: all lint test clean query index
 
-all: test $(targets)
+all: lint test $(targets)
 
-test: lint testnolint
+test: testnolint
 
 testnolint:
 	go test -race ./...
 
 lint:
-	golangci-lint run
+	golangci-lint run ./...
+
+lint-drone:
+	golangci-lint run -c .golangci-drone.yml ./...
 
 query:
 	go build -o query $(LDFLAGS) github.com/akhenakh/docindex/cmd/query

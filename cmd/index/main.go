@@ -17,12 +17,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	version   = "no version from LDFLAGS"
-	indexPath = flag.String("indexPath", "index.db", "index db path")
-	docPath   = flag.String("docPath", "mkdocs.yml", "mkdocs config path")
-)
-
 type MKDocs struct {
 	Nav []map[string]interface{} `yaml:"nav"`
 }
@@ -45,7 +39,7 @@ type txtRenderer struct {
 // entering=true, then with entering=false). The method should write its
 // rendition of the node to the supplied writer w.
 func (r *txtRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
-	switch node.Type {
+	switch node.Type { // nolint:exhaustive
 	case blackfriday.Heading:
 		if node.Level == 1 {
 			r.inTitle = entering
@@ -64,9 +58,10 @@ func (r *txtRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering b
 
 			break
 		}
-		w.Write(node.Literal)
-		w.Write([]byte{' '})
+		_, _ = w.Write(node.Literal)
+		_, _ = w.Write([]byte{' '})
 	}
+
 	return blackfriday.GoToNext
 }
 
@@ -87,6 +82,11 @@ func (r *txtRenderer) RenderHeader(w io.Writer, ast *blackfriday.Node) {}
 func (r *txtRenderer) RenderFooter(w io.Writer, ast *blackfriday.Node) {}
 
 func main() {
+	var (
+		indexPath = flag.String("indexPath", "index.db", "index db path")
+		docPath   = flag.String("docPath", "mkdocs.yml", "mkdocs config path")
+	)
+
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -165,6 +165,7 @@ func parseNode(n interface{}, ptitles []string, pages *[]Page) {
 				ctitles := append([]string(nil), ptitles...)
 				ctitles = append(ctitles, titlestring)
 				parseNode(v, ctitles, pages)
+
 				continue
 			}
 
@@ -181,7 +182,7 @@ func parseNode(n interface{}, ptitles []string, pages *[]Page) {
 		if len(t) < 2 {
 			return
 		}
-		//log.Println("filename", t, "itags", strings.Join(ptitles, "|"))
+		// log.Println("filename", t, "itags", strings.Join(ptitles, "|"))
 		p := Page{
 			itags: ptitles,
 			Path:  t,
@@ -189,7 +190,7 @@ func parseNode(n interface{}, ptitles []string, pages *[]Page) {
 		*pages = append(*pages, p)
 
 	default:
-		log.Printf("unkown type %T %s\n", t, t)
+		log.Printf("unknown type %T %s\n", t, t)
 	}
 }
 
@@ -208,5 +209,6 @@ func readMKDocs(path string) (*MKDocs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't read the mkdocs yaml file: %w", err)
 	}
+
 	return doc, nil
 }

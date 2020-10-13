@@ -14,16 +14,14 @@ import (
 
 const dvURL = "https://docs.dv.nyt.net/"
 
-var (
-	version = "no version from LDFLAGS"
-
-	indexPath   = flag.String("indexPath", "index.db", "index db path")
-	queryString = flag.String("q", "", "query string")
-	lucky       = flag.Bool("lucky", false, "I feel lucky, open the first found result")
-	limit       = flag.Int("limit", 10, "limit response count")
-)
-
 func main() {
+	var (
+		indexPath   = flag.String("indexPath", "index.db", "index db path")
+		queryString = flag.String("q", "", "query string")
+		lucky       = flag.Bool("lucky", false, "I feel lucky, open the first found result")
+		limit       = flag.Int("limit", 10, "limit response count")
+	)
+
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -34,7 +32,7 @@ func main() {
 	}
 	query := bleve.NewQueryStringQuery(*queryString)
 	search := bleve.NewSearchRequest(query)
-	//search.Highlight = bleve.NewHighlightWithStyle(ansi.Name)
+	// search.Highlight = bleve.NewHighlightWithStyle(ansi.Name)
 	search.Highlight = bleve.NewHighlight()
 	search.Size = *limit
 	if *lucky {
@@ -46,7 +44,7 @@ func main() {
 	}
 
 	if *lucky && searchResults.Total > 0 {
-		//fmt.Println(searchResults.Hits[0].ID)
+		// fmt.Println(searchResults.Hits[0].ID)
 		path := strings.TrimSuffix(searchResults.Hits[0].ID, "/README.md")
 		path = strings.TrimSuffix(path, ".md")
 		url := dvURL + path + "/"

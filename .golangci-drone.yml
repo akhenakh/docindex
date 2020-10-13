@@ -1,0 +1,32 @@
+run:
+  # default concurrency is a available CPU number
+  concurrency: 4
+
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 5m
+
+linters:
+  presets:
+    - bugs
+    - unused
+    - complexity
+    - format
+    - performance
+    - style
+  disable:
+    - godox
+    - wsl
+    - funlen
+    - gomnd
+    - goerr113
+
+  fast: false
+
+linters-settings:
+  errcheck:
+    # path to a file containing a list of functions to exclude from checking
+    # see https://github.com/kisielk/errcheck#excluding-functions for details
+    exclude: ./errcheck-exclude.txt
+  gocritic:
+    disabled-checks:
+      - exitAfterDefer
