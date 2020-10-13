@@ -46,8 +46,9 @@ func main() {
 	}
 
 	if *lucky && searchResults.Total > 0 {
-		fmt.Println(searchResults.Hits[0].ID)
-		path := strings.TrimSuffix(searchResults.Hits[0].ID, ".md")
+		//fmt.Println(searchResults.Hits[0].ID)
+		path := strings.TrimSuffix(searchResults.Hits[0].ID, "/README.md")
+		path = strings.TrimSuffix(path, ".md")
 		url := dvURL + path + "/"
 		err = browser.OpenURL(url)
 		if err != nil {
